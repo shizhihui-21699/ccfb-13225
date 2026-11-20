@@ -1,0 +1,1 @@
+<h1>PHP Version 8.1.27</h1><p>System: Linux web-02 ...（phpinfo 输出）</p>

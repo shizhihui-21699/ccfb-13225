@@ -1,0 +1,3 @@
+<?php
+// 首页上一版
+$conn = mysql_connect('db.internal', 'shop', 'Sh0p!2024');

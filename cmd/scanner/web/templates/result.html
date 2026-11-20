@@ -1,0 +1,61 @@
+{{define "result"}}
+<div class="result" id="result-{{.ID}}"
+  {{if .Running}}hx-get="/sites/{{.ID}}/result" hx-trigger="every 1.5s" hx-swap="outerHTML"{{end}}>
+  <div class="card-head" style="margin-top:8px">
+    {{if .Running}}
+      <span class="badge scanning">扫描中…</span>
+      <span class="summary">已发现 {{len .Findings}} 项</span>
+    {{else}}
+      <span class="badge done">完成</span>
+      <span class="summary">
+        命中 {{len .Findings}} 项
+        （备份 {{.CountByCategory "备份文件"}} ·
+        版本库 {{.CountByCategory "版本库泄露"}} ·
+        临时文件 {{.CountByCategory "编辑器临时文件"}} ·
+        配置 {{.CountByCategory "敏感配置"}} ·
+        调试 {{.CountByCategory "调试接口/页面"}}）
+        · 耗时 {{.Finished.Sub .Started | printf "%.1f" }}s
+      </span>
+    {{end}}
+  </div>
+
+  {{if .Err}}<div class="meta" style="color:#b3261e">{{.Err}}</div>{{end}}
+
+  {{if .Findings}}
+  <table>
+    <thead><tr><th>严重度</th><th>分类</th><th>路径</th><th>状态</th><th>大小</th><th>置信</th><th>说明</th></tr></thead>
+    <tbody>
+    {{range .Findings}}
+      <tr>
+        <td><span class="{{sevClass .Severity}}">{{.Severity}}</span></td>
+        <td>{{.Category}}</td>
+        <td class="path"><a href="{{.URL}}" target="_blank" rel="noopener">/{{.Path}}</a></td>
+        <td>{{.Status}}</td>
+        <td>{{.Size}}</td>
+        <td><span class="{{confClass .Confidence}}">{{.Confidence}}</span></td>
+        <td>{{.Note}}</td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  {{else if not .Running}}
+    <div class="empty">未发现遗留文件。</div>
+  {{end}}
+
+  {{if .Git}}
+  <div class="gitbox">
+    {{if .Git.Err}}
+      <h4>.git 还原失败</h4>
+      <div class="meta">{{.Git.Err}}</div>
+    {{else}}
+      <h4>已从泄露的 .git 还原出 {{len .Git.Files}} 个源码文件</h4>
+      <div class="meta">
+        HEAD: {{.Git.Commit}}{{if .Git.CommitMsg}}（{{.Git.CommitMsg}}）{{end}}
+        · 还原目录：<code>{{.Git.Dir}}</code>
+      </div>
+      <ul>{{range .Git.Files}}<li>{{.}}</li>{{end}}</ul>
+    {{end}}
+  </div>
+  {{end}}
+</div>
+{{end}}

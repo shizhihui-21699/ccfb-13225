@@ -1,0 +1,3 @@
+<?php
+// 首页备份
+$conn = mysql_connect('db.internal', 'shop', 'Sh0p!2024');

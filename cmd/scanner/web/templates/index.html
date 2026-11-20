@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>站点遗留文件巡检</title>
+<script src="/static/htmx.min.js"></script>
+<style>
+  :root { --bg:#f6f7f9; --fg:#1c2430; --card:#fff; --line:#e2e6ec; --accent:#b3261e; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--fg); }
+  .wrap { max-width:1080px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:#667; margin-bottom:20px; }
+  .addbar { display:flex; gap:8px; margin-bottom:24px; }
+  .addbar input { flex:1; padding:10px 12px; border:1px solid var(--line); border-radius:8px; font-size:14px; }
+  .btn { padding:10px 18px; border:0; border-radius:8px; background:#1c2430; color:#fff; cursor:pointer; font-size:14px; }
+  .btn:hover { opacity:.88; }
+  .btn.small { padding:5px 12px; font-size:13px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin-bottom:16px; }
+  .card-head { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .site-url { font-weight:600; font-size:15px; word-break:break-all; }
+  .badge { display:inline-block; padding:1px 10px; border-radius:99px; font-size:12px; background:#eef1f5; color:#556; }
+  .badge.scanning { background:#fff4d6; color:#8a6d00; }
+  .badge.done { background:#e3f4e5; color:#1e7a2e; }
+  .summary { color:#667; font-size:13px; }
+  table { width:100%; border-collapse:collapse; margin-top:12px; font-size:13px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:#667; font-weight:500; white-space:nowrap; }
+  td.path { font-family:ui-monospace,Menlo,monospace; word-break:break-all; }
+  .sev-crit { color:#fff; background:#b3261e; padding:0 8px; border-radius:4px; }
+  .sev-high { color:#b3261e; font-weight:600; }
+  .sev-mid  { color:#b26a00; }
+  .sev-low  { color:#667; }
+  .conf-high { color:#1e7a2e; } .conf-mid { color:#b26a00; } .conf-low { color:#99a; }
+  .gitbox { margin-top:12px; border:1px solid #f0c6c2; background:#fdf3f2; border-radius:8px; padding:12px 14px; }
+  .gitbox h4 { margin:0 0 6px; color:#b3261e; }
+  .gitbox ul { margin:6px 0 0; padding-left:18px; font-family:ui-monospace,Menlo,monospace; font-size:12.5px; max-height:220px; overflow:auto; }
+  .meta { color:#667; font-size:12.5px; }
+  .empty { color:#99a; padding:32px 0; text-align:center; }
+  .hint { background:#eef4ff; border:1px solid #cfdefc; border-radius:8px; padding:10px 14px; font-size:13px; color:#345; margin-bottom:20px; }
+  code { background:#eef1f5; padding:1px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>站点遗留文件巡检</h1>
+  <div class="sub">探测外包交付站点遗留的备份压缩包、版本库目录、编辑器临时文件与调试接口；发现可下载的 .git 时直接还原源码目录结构。</div>
+
+  <div class="hint">
+    本地演示站（由 <code>go run ./cmd/demosite</code> 启动）：
+    <code>http://localhost:9101</code>（泄露 .git + 备份包 + .env）、
+    <code>http://localhost:9102</code>（.svn + 编辑器临时文件 + 调试页）、
+    <code>http://localhost:9103</code>（干净站点，对照组）。
+  </div>
+
+  <form class="addbar" hx-post="/sites" hx-target="#sites" hx-swap="afterbegin" hx-on::after-request="this.reset()">
+    <input name="url" placeholder="输入站点地址，如 http://localhost:9101" required>
+    <button class="btn" type="submit">添加并扫描</button>
+  </form>
+
+  <div id="sites">
+    {{range .Sites}}{{template "card" .}}{{else}}
+    <div class="empty">还没有站点，添加一个开始巡检。</div>
+    {{end}}
+  </div>
+</div>
+</body>
+</html>

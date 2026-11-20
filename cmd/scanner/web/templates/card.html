@@ -1,0 +1,9 @@
+{{define "card"}}
+<div class="card" id="card-{{.ID}}">
+  <div class="card-head">
+    <span class="site-url">{{.URL}}</span>
+    <button class="btn small" hx-post="/sites/{{.ID}}/scan" hx-target="#result-{{.ID}}" hx-swap="outerHTML">重新扫描</button>
+  </div>
+  {{template "result" .}}
+</div>
+{{end}}
